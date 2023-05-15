@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/RESTAPIPractice.iml" filepath="$PROJECT_DIR$/.idea/RESTAPIPractice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/WeatherAPI/WeatherAPI.iml" filepath="$PROJECT_DIR$/WeatherAPI/WeatherAPI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/consuming-rest/consuming-rest.iml" filepath="$PROJECT_DIR$/consuming-rest/consuming-rest.iml" />
     </modules>
   </component>
 </project>
