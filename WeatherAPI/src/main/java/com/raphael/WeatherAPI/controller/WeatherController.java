@@ -1,28 +1,22 @@
 package com.raphael.WeatherAPI.controller;
 
-import com.raphael.WeatherAPI.repository.WeatherRepository;
+import com.raphael.WeatherAPI.model.WeatherDescription;
+import com.raphael.WeatherAPI.service.WeatherService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class WeatherController {
 
-    private WeatherRepository repository;
+    private WeatherService service;
 
-    public WeatherController(WeatherRepository repository) {
-        this.repository = repository;
+    public WeatherController(WeatherService service) {
+        this.service = service;
     }
 
     @GetMapping("/weather")
-    public String getWeatherFromLocation(String location) {
-        // get data from location (do logic in service class)
+    public WeatherDescription getWeatherFromLocation(String location) throws Exception {
 
-        // take long/lat from data and get weather data
-
-        // map to Weather object
-
-        // return in this method.
-
-        return "hello";
+        return service.getCurrentWeather(location);
     }
 }

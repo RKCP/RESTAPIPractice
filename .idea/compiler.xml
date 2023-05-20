@@ -9,7 +9,6 @@
         <outputRelativeToContentRoot value="true" />
         <module name="WeatherAPI" />
         <module name="consuming-rest" />
-        <module name="quoters-incorporated" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
