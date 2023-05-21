@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
 import com.raphael.WeatherAPI.model.Location;
 import com.raphael.WeatherAPI.model.WeatherReport;
+import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +62,14 @@ public class WeatherService {
                 Map<String, Object> responseMap = objectMapper.readValue(response, new TypeReference<>(){});
 
                 if (!responseMap.isEmpty()) {
+                    // Use ObjectMapper to map the required fields from the JSON into our CurrentWeatherResponse object. Adding this object as an additional Layer due to the nested nature of the JSON response
+                    CurrentWeatherResponse currentWeatherResponse = objectMapper.convertValue(responseMap, CurrentWeatherResponse.class);
 
-                    // Extract the fields we need for the CurrentWeather object from the map
-                    Double temperature = (Double) responseMap.get("temp");
-                    int humidity = (Integer) responseMap.get("humidity");
-                    Double windSpeed = (Double) responseMap.get("speed");
-                    String description = (String) responseMap.get("description");
+                    // Extract the fields we need for the CurrentWeather object from CurrentWeatherResponse
+                    Double temperature = (Double) currentWeatherResponse.main().get("temp");
+                    int humidity = (Integer) currentWeatherResponse.main().get("humidity");
+                    Double windSpeed = (Double) currentWeatherResponse.wind().get("speed");
+                    String description = (String) currentWeatherResponse.weather().get(0).get("description");
 
                     // Create a new CurrentWeather object with the extracted values
                     CurrentWeather currentWeather = new CurrentWeather(temperature, humidity, windSpeed, description);
@@ -104,17 +107,10 @@ public class WeatherService {
             List<Map<String, Object>> responseList = objectMapper.readValue(jsonResponse, new TypeReference<>(){});
 
             if (!responseList.isEmpty()) {
-                Map<String, Object> responseMap = responseList.get(0);
-
-                // Extract the "lat" and "lon" fields from the map
-                Double latitude = (Double) responseMap.get("lat");
-                Double longitude = (Double) responseMap.get("lon");
-
-                // Create a new Location object with the extracted values
-                Location location = new Location(latitude, longitude);
-
+                Location location = objectMapper.convertValue(responseList.get(0), Location.class);
                 return Optional.of(location);
             }
+
         } catch (URISyntaxException e) {
             logger.error("Error occurred while building URL from cityName: {}", e.getMessage());
         } catch (Exception e) {
