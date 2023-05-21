@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
 import com.raphael.WeatherAPI.model.Location;
-import com.raphael.WeatherAPI.model.WeatherReport;
 import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,7 +70,7 @@ public class WeatherService {
                     String description = (String) currentWeatherResponse.weather().get(0).get("description");
 
                     // Create a new CurrentWeather object with the extracted values
-                    CurrentWeather currentWeather = new CurrentWeather(temperature, humidity, windSpeed, description);
+                    CurrentWeather currentWeather = new CurrentWeather(cityName, temperature, humidity, windSpeed, description);
 
                     return Optional.of(currentWeather);
                 }
