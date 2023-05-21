@@ -42,7 +42,7 @@ public class WeatherService {
      * @param cityName is the name of the city we are searching the weather for
      * @return the current weather details for the given location
      */
-    public CurrentWeather getCurrentWeather(String cityName) {
+    public Optional<CurrentWeather> getCurrentWeather(String cityName) {
 
         Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
         String baseUri = "https://api.openweathermap.org/data/2.5/weather";
@@ -54,19 +54,35 @@ public class WeatherService {
             try {
                 URI uri = new URI(baseUri + "?lat=" + actualLocation.latitude() + "&lon=" + actualLocation.longitude() + "&appid=" + API_KEY);
 
-                List<?> response = restTemplate.getForObject(uri.toString(), List.class);
+                // Get the JSON response from the OpenWeather API. Get it as a string since objectMapper can handle the rest
+                String response = restTemplate.getForObject(uri, String.class);
 
-                CurrentWeather currentWeather = objectMapper.convertValue(response, CurrentWeather.class);
+                // Deserialize the JSON array into a list of location maps, since we are receiving an array from OpenWeather API
+                Map<String, Object> responseMap = objectMapper.readValue(response, new TypeReference<>(){});
 
-                return currentWeather;
+                if (!responseMap.isEmpty()) {
 
-            } catch (Exception e) {
-                logger.error("Error occurred while getting weather: {}", e.getMessage());
+                    // Extract the fields we need for the CurrentWeather object from the map
+                    Double temperature = (Double) responseMap.get("temp");
+                    int humidity = (Integer) responseMap.get("humidity");
+                    Double windSpeed = (Double) responseMap.get("speed");
+                    String description = (String) responseMap.get("description");
+
+                    // Create a new CurrentWeather object with the extracted values
+                    CurrentWeather currentWeather = new CurrentWeather(temperature, humidity, windSpeed, description);
+
+                    return Optional.of(currentWeather);
+                }
+
+            } catch (URISyntaxException e) {
+                logger.error("Error occurred while building URL from cityName: {}", e.getMessage());
+            } catch (Exception e) { // objectMapper.readValue possibly throwing two JSON exceptions. Have URISyntaxException for specific logging.
+                logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
             }
         } else {
             logger.error("Location data is not available for the given city: {}", cityName);
         }
-        return new CurrentWeather(0.0, 0, 0.0, "");
+        return Optional.empty();
     }
 
 
@@ -84,7 +100,7 @@ public class WeatherService {
             // Get the JSON response from the OpenWeather API. Get it as a string since objectMapper can handle the rest
             String jsonResponse = restTemplate.getForObject(uri, String.class);
 
-            // Deserialize the JSON array into a list of location maps, since we are recieving an array from OpenWeather API
+            // Deserialize the JSON array into a list of location maps, since we are receiving an array from OpenWeather API
             List<Map<String, Object>> responseList = objectMapper.readValue(jsonResponse, new TypeReference<>(){});
 
             if (!responseList.isEmpty()) {

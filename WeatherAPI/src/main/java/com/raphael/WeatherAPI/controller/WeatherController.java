@@ -1,11 +1,12 @@
 package com.raphael.WeatherAPI.controller;
 
 import com.raphael.WeatherAPI.model.CurrentWeather;
-import com.raphael.WeatherAPI.model.WeatherDescription;
 import com.raphael.WeatherAPI.service.WeatherService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.Optional;
 
 @Controller
 public class WeatherController {
@@ -17,7 +18,7 @@ public class WeatherController {
     }
 
     @GetMapping("/weather/{location}")
-    public CurrentWeather getCurrentWeatherFromLocation(@PathVariable("location") String location) throws Exception {
+    public Optional<CurrentWeather> getCurrentWeatherFromLocation(@PathVariable("location") String location) {
 
         return service.getCurrentWeather(location);
     }
