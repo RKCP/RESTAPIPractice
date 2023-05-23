@@ -38,10 +38,13 @@ public class WeatherService {
 
     /**
      * Gets the cityName, calls an internal method to get the lat/lon, and produces the current weather for the given location
-     * @param cityName is the name of the city we are searching the weather for
+     * @param input is the name of the city we are searching the weather for
      * @return the current weather details for the given location
      */
-    public Optional<CurrentWeather> getCurrentWeather(String cityName) {
+    public Optional<CurrentWeather> getCurrentWeather(String input) {
+
+        // Replaces spaces with underscores for OpenWeather API
+        String cityName = input.replace(" ", "_").toLowerCase();
 
         Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
         String baseUri = "https://api.openweathermap.org/data/2.5/weather";
@@ -65,12 +68,20 @@ public class WeatherService {
 
                     // Extract the fields we need for the CurrentWeather object from CurrentWeatherResponse
                     Double temperature = (Double) currentWeatherResponse.main().get("temp");
+                    temperature -= 273.15; // convert from kelvin to celsius
+                    int tempAsInt = (int) Math.round(temperature);
                     int humidity = (Integer) currentWeatherResponse.main().get("humidity");
                     Double windSpeed = (Double) currentWeatherResponse.wind().get("speed");
                     String description = (String) currentWeatherResponse.weather().get(0).get("description");
 
+                    // Capitalize first letter of given cityName and remove underscores
+                    String location = cityName
+                            .substring(0, 1).toUpperCase() +
+                            cityName.substring(1).replace("_", " ");
+
+
                     // Create a new CurrentWeather object with the extracted values
-                    CurrentWeather currentWeather = new CurrentWeather(cityName, temperature, humidity, windSpeed, description);
+                    CurrentWeather currentWeather = new CurrentWeather(location, tempAsInt, humidity, windSpeed, description);
 
                     return Optional.of(currentWeather);
                 }
