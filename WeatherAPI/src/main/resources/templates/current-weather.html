@@ -10,23 +10,30 @@
 <div th:switch="${currentWeather}">
     <h2 th:case="null">No weather yet!</h2>
     <div th:case="*">
-        <h2 th:text="'Current Weather in ' + ${currentWeather.location}"></h2>
-        <table>
-            <thead>
-            <tr>
-                <th><i class="fas fa-thermometer-half"></i></th>
-                <th><i class="fas fa-tint"></i></th>
-                <th><i class="fas fa-wind"></i></th>
-                <th><i class="fas fa-cloud"></i></th>
-            </tr>
-            </thead>
-            <tbody>
-                <td th:text="${currentWeather.temperature}"></td>
-                <td th:text="${currentWeather.humidity}"></td>
-                <td th:text="${currentWeather.windSpeed}"></td>
-                <td th:text="${currentWeather.description}"></td>
-            </tbody>
-        </table>
+        <h1>
+            Current Weather in <span th:text="${currentWeather.location}" class="pastel-red"></span>
+        </h1>
+
+
+        <div class="section">
+            <i class="fas fa-thermometer-half"></i>
+            <p th:text="${currentWeather.temperature}"></p>
+        </div>
+
+        <div class="section">
+            <i class="fas fa-tint"></i>
+            <p th:text="${currentWeather.humidity}"></p>
+        </div>
+
+        <div class="section">
+            <i class="fas fa-wind"></i>
+            <p th:text="${currentWeather.windSpeed}"></p>
+        </div>
+
+        <div class="section">
+            <i class="fas fa-cloud"></i>
+            <p th:text="${currentWeather.description}"></p>
+        </div>
     </div>
 </div>
 </body>
