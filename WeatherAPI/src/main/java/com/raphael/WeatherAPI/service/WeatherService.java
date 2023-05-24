@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
 import com.raphael.WeatherAPI.model.Location;
+import com.raphael.WeatherAPI.model.WeatherForecast;
 import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
+import com.raphael.WeatherAPI.model.response.WeatherForecastResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,7 +23,7 @@ import java.util.Optional;
 @Service
 public class WeatherService {
 
-    private final String API_KEY = "cfe749fee8e119f7b17df5d7b4ed3301";
+    private final String API_KEY = "e30fcfa99c63f0e68d5d5a4e7bdd089a";
 
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
 
@@ -98,12 +101,107 @@ public class WeatherService {
     }
 
 
+
+    // Need to filter out the bs api...
+    // Basically we can have a counter which increments from 1-5 each time the NEXT day of the week (dayAsInt) is found.
+    // If it is the same day and not a new day, then don't even do the processing on it, so you need to refactor the code to work out the dayAsInt first...
+    // when we get 5 days, return the ArrayList. In fact, change the arrayList to an array of size 5 for better memory.
+
+
+
+    public List<WeatherForecast> getWeatherForecast(String input) {
+
+        // Replaces spaces with underscores for OpenWeather API
+        String cityName = input.replace(" ", "_").toLowerCase();
+
+        Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
+        String baseUri = "https://api.openweathermap.org/data/2.5/forecast";
+
+        if (optionalLocation.isPresent()) {
+
+            Location actualLocation = optionalLocation.get();
+
+            try {
+                URI uri = new URI(baseUri + "?lat=" + actualLocation.latitude() + "&lon=" + actualLocation.longitude() + "&cnt=5&appid=" + API_KEY);
+
+                // Get the JSON response from the OpenWeather API. Get it as a string since objectMapper can handle the rest
+                String response = restTemplate.getForObject(uri, String.class);
+
+                // Deserialize the JSON array into a list of location maps, since we are receiving an array from OpenWeather API
+                Map<String, Object> responseMap = objectMapper.readValue(response, new TypeReference<>(){});
+
+                // Get list from within the response map. All values needed are inside this arraylist
+                ArrayList<?> weatherResponseList = (ArrayList<?>) responseMap.get("list");
+
+                // ArrayList to store the weather forecast
+                ArrayList<WeatherForecast> weatherForecasts = new ArrayList<>();
+
+                // Loop and get each of the forecasted weathers, and add to the WeatherForecast List
+                for (Object o : weatherResponseList) {
+                    // Convert the map inside the weatherResponseList to a Map that we can pull the data from and place into our WeatherForecast Object
+                    Map<String, Object> listObjectMap = objectMapper.convertValue(o, new TypeReference<>() {});
+
+                    if (!listObjectMap.isEmpty()) {
+                        // Use ObjectMapper to map the required fields from the JSON into our CurrentWeatherResponse object. Adding this object as an additional Layer due to the nested nature of the JSON response
+                        WeatherForecastResponse weatherForecastResponse = objectMapper.convertValue(listObjectMap, WeatherForecastResponse.class);
+
+                        // Extract the fields we need for the CurrentWeather object from CurrentWeatherResponse
+                        Double temperature = (Double) weatherForecastResponse.main().get("temp");
+                        temperature -= 273.15; // convert from Kelvin to Celsius
+                        int tempAsInt = (int) Math.round(temperature);
+                        int humidity = (int) weatherForecastResponse.main().get("humidity");
+                        Double windSpeed = (Double) weatherForecastResponse.wind().get("speed");
+                        String description = (String) weatherForecastResponse.weather().get(0).get("description");
+
+                        // Capitalize first letter of given cityName and remove underscores
+                        String location = cityName
+                                .substring(0, 1).toUpperCase() +
+                                cityName.substring(1).replace("_", " ");
+
+
+                        // Convert Unix date to a day of the week
+                        // day of week = (floor(T / 86400) + 4) mod 7.
+                        int dateAsUnix = (int) weatherForecastResponse.date();
+                        int dayAsInt = (int) ((double) (dateAsUnix / 86400) + 4) % 7;
+
+                        // enhanced switch statement to map day of week based on dayAsInt
+                        String dayOfTheWeek = switch (dayAsInt) {
+                            case 0 -> "Mon";
+                            case 1 -> "Tue";
+                            case 2 -> "Wed";
+                            case 3 -> "Thu";
+                            case 4 -> "Fri";
+                            case 5 -> "Sat";
+                            default -> "Sun";
+                        };
+
+                        // Create a new CurrentWeather object with the extracted values
+                        WeatherForecast weatherForecast = new WeatherForecast(location, dayOfTheWeek, tempAsInt, humidity, windSpeed, description);
+
+                        weatherForecasts.add(weatherForecast);
+                    }
+                } // end of for loop
+
+                return weatherForecasts;
+
+            } catch (URISyntaxException e) {
+                logger.error("Error occurred while building URL from cityName: {}", e.getMessage());
+            } catch (Exception e) { // objectMapper.readValue possibly throwing two JSON exceptions. Have URISyntaxException for specific logging.
+                logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
+            }
+        } else {
+            logger.error("Location data is not available for the given city: {}", cityName);
+        }
+        return new ArrayList<>();
+    }
+
+
     /**
      * Helper method that generates the lat/lon based on the given city name. This is required for OpenWeatherMap API, as it does not take a cityName and return relevant weather details
      * @param cityName is the name of the city we are searching the weather for
      * @return an optional Location object containing the lat/lon for the given cityName
      */
-    public Optional<Location> getLatLonFromLocation(String cityName) {
+    private Optional<Location> getLatLonFromLocation(String cityName) {
         String baseUri = "https://api.openweathermap.org/geo/1.0/direct";
 
         try {
