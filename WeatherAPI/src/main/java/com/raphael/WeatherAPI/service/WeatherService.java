@@ -71,7 +71,7 @@ public class WeatherService {
 
                     // Extract the fields we need for the CurrentWeather object from CurrentWeatherResponse
                     Double temperature = (Double) currentWeatherResponse.main().get("temp");
-                    temperature -= 273.15; // convert from kelvin to celsius
+                    temperature -= 273.15; // convert from kelvin to Celsius
                     int tempAsInt = (int) Math.round(temperature);
                     int humidity = (Integer) currentWeatherResponse.main().get("humidity");
                     Double windSpeed = (Double) currentWeatherResponse.wind().get("speed");

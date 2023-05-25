@@ -41,8 +41,8 @@ public class WeatherController {
 
         if (!optionalWeatherForecast.isEmpty()) {
             WeatherForecast weatherForecast = optionalWeatherForecast.get(0);
-            model.addAttribute("currentWeather", weatherForecast);
-            //return "current-weather";
+            model.addAttribute("forecastWeather", weatherForecast);
+            //return "forecast-weather";
 
             return weatherForecast;
         } else {
