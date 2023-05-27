@@ -35,16 +35,14 @@ public class WeatherController {
     }
 
     @GetMapping("/forecast/{location}")
-    public WeatherForecast getForecastFromLocation(@PathVariable("location") String location, Model model) throws Exception {
+    public String getForecastFromLocation(@PathVariable("location") String location, Model model) throws Exception {
 
         List<WeatherForecast> optionalWeatherForecast = service.getWeatherForecast(location);
 
         if (!optionalWeatherForecast.isEmpty()) {
             WeatherForecast weatherForecast = optionalWeatherForecast.get(0);
-            model.addAttribute("forecastWeather", weatherForecast);
-            //return "forecast-weather";
-
-            return weatherForecast;
+            model.addAttribute("forecastedWeather", weatherForecast); // forecastedWeather is the variable we will use in HTML to access the properties
+            return "forecast-weather";
         } else {
             throw new Exception("Weather information not available for the specified location");
         }

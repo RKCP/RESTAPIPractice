@@ -106,6 +106,11 @@ public class WeatherService {
         // Replaces spaces with underscores for OpenWeather API
         String cityName = input.replace(" ", "_").toLowerCase();
 
+        // Capitalize first letter of given cityName and remove underscores <<<< move these two methods to a formatLocationString method or something
+        String location = cityName
+                .substring(0, 1).toUpperCase() +
+                cityName.substring(1).replace("_", " ");
+
         Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
         String baseUri = "https://api.openweathermap.org/data/2.5/forecast";
 
@@ -114,7 +119,7 @@ public class WeatherService {
             Location actualLocation = optionalLocation.get();
 
             try {
-                URI uri = new URI(baseUri + "?lat=" + actualLocation.latitude() + "&lon=" + actualLocation.longitude() + "&cnt=5&appid=" + API_KEY);
+                URI uri = new URI(baseUri + "?lat=" + actualLocation.latitude() + "&lon=" + actualLocation.longitude() + "&appid=" + API_KEY);
 
                 // Get the JSON response from the OpenWeather API. Get it as a string since objectMapper can handle the rest
                 String response = restTemplate.getForObject(uri, String.class);
@@ -141,17 +146,12 @@ public class WeatherService {
                         WeatherForecastResponse weatherForecastResponse = objectMapper.convertValue(listObjectMap, WeatherForecastResponse.class);
 
                         // Extract the fields we need for the CurrentWeather object from CurrentWeatherResponse
-                        Double temperature = (Double) weatherForecastResponse.main().get("temp");
+                        Double temperature = Double.parseDouble(weatherForecastResponse.main().get("temp").toString());
                         temperature -= 273.15; // convert from Kelvin to Celsius
                         int tempAsInt = (int) Math.round(temperature);
                         int humidity = (int) weatherForecastResponse.main().get("humidity");
-                        Double windSpeed = (Double) weatherForecastResponse.wind().get("speed");
+                        Double windSpeed = Double.parseDouble(weatherForecastResponse.wind().get("speed").toString());
                         String description = (String) weatherForecastResponse.weather().get(0).get("description");
-
-                        // Capitalize first letter of given cityName and remove underscores
-                        String location = cityName
-                                .substring(0, 1).toUpperCase() +
-                                cityName.substring(1).replace("_", " ");
 
 
                         // Convert Unix date to a day of the week
@@ -171,18 +171,17 @@ public class WeatherService {
                         };
 
                         // Check if day has already been forecasted, if it has, exit current loop iteration, since we only want 1 of each day
-                        // Would take multiple readings, but OpenWeatherApi aren't clear what each reading is (AM/PM etc)
+                        // Would take multiple readings, but OpenWeatherApi aren't clear what each reading is (AM/PM etc.)
                         // Could convert the unix time, but for the scale of this project, not required.
                         if (!daysInForecast.contains(dayOfTheWeek)) {
                             daysInForecast.add(dayOfTheWeek);
-                        } else  {
-                            break;
+
+                            // Create a new CurrentWeather object with the extracted values
+                            WeatherForecast weatherForecast = new WeatherForecast(location, dayOfTheWeek, tempAsInt, humidity, windSpeed, description);
+                            weatherForecasts.add(weatherForecast);
+
+                            if (weatherForecasts.size() == 5) break;
                         }
-
-                        // Create a new CurrentWeather object with the extracted values
-                        WeatherForecast weatherForecast = new WeatherForecast(location, dayOfTheWeek, tempAsInt, humidity, windSpeed, description);
-
-                        weatherForecasts.add(weatherForecast);
                     }
                 } // end of for loop
 
