@@ -1,10 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Current Weather</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <style>
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 50px;
+            justify-content: center;
+        }
+
+        @media screen and (max-width: 768px) {
+            .forecast-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
+<div th:if="${forecastedWeather.size() > 0}">
+    <div class="weather-card">
+        <h1>
+            Current Weather in <span th:text="${forecastedWeather.get(0).location}" class="pastel-red"></span>
+        </h1>
+    </div>
+</div>
 
+<div class="forecast-grid">
+    <div th:each="forecast : ${forecastedWeather}" class="weather-card">
+        <div class="section">
+            <h2 th:text="${forecast.day}"></h2>
+            <i class="fas fa-thermometer-half"></i>
+            <p th:text="${forecast.temperature}"></p>
+        </div>
+
+        <div class="section">
+            <i class="fas fa-tint"></i>
+            <p th:text="${forecast.humidity}"></p>
+        </div>
+
+        <div class="section">
+            <i class="fas fa-wind"></i>
+            <p th:text="${forecast.windSpeed}"></p>
+        </div>
+
+        <div class="section">
+            <i th:class="${@weatherIconUtil.getIconClass(forecast.description)}"></i>
+            <p th:text="${forecast.description}"></p>
+        </div>
+    </div>
+</div>
 </body>
 </html>

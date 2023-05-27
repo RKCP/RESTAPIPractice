@@ -40,7 +40,7 @@ public class WeatherController {
         List<WeatherForecast> optionalWeatherForecast = service.getWeatherForecast(location);
 
         if (!optionalWeatherForecast.isEmpty()) {
-            WeatherForecast weatherForecast = optionalWeatherForecast.get(0);
+            List<WeatherForecast> weatherForecast = optionalWeatherForecast.stream().toList();
             model.addAttribute("forecastedWeather", weatherForecast); // forecastedWeather is the variable we will use in HTML to access the properties
             return "forecast-weather";
         } else {
