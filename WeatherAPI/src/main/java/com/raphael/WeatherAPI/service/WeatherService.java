@@ -152,6 +152,7 @@ public class WeatherService {
                         int humidity = (int) weatherForecastResponse.main().get("humidity");
                         Double windSpeed = Double.parseDouble(weatherForecastResponse.wind().get("speed").toString());
                         String description = (String) weatherForecastResponse.weather().get(0).get("description");
+                        int id = (int) weatherForecastResponse.weather().get(0).get("id");
 
 
                         // Convert Unix date to a day of the week
@@ -177,7 +178,7 @@ public class WeatherService {
                             daysInForecast.add(dayOfTheWeek);
 
                             // Create a new CurrentWeather object with the extracted values
-                            WeatherForecast weatherForecast = new WeatherForecast(location, dayOfTheWeek, tempAsInt, humidity, windSpeed, description);
+                            WeatherForecast weatherForecast = new WeatherForecast(location, dayOfTheWeek, id, tempAsInt, humidity, windSpeed, description);
                             weatherForecasts.add(weatherForecast);
 
                             if (weatherForecasts.size() == 5) break;
