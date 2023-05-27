@@ -101,14 +101,6 @@ public class WeatherService {
     }
 
 
-
-    // Need to filter out the bs api...
-    // Basically we can have a counter which increments from 1-5 each time the NEXT day of the week (dayAsInt) is found.
-    // If it is the same day and not a new day, then don't even do the processing on it, so you need to refactor the code to work out the dayAsInt first...
-    // when we get 5 days, return the ArrayList. In fact, change the arrayList to an array of size 5 for better memory.
-
-
-
     public List<WeatherForecast> getWeatherForecast(String input) {
 
         // Replaces spaces with underscores for OpenWeather API
@@ -135,6 +127,9 @@ public class WeatherService {
 
                 // ArrayList to store the weather forecast
                 ArrayList<WeatherForecast> weatherForecasts = new ArrayList<>();
+
+                // ArrayList to store current days in forecast
+                ArrayList<String> daysInForecast = new ArrayList<>();
 
                 // Loop and get each of the forecasted weathers, and add to the WeatherForecast List
                 for (Object o : weatherResponseList) {
@@ -174,6 +169,15 @@ public class WeatherService {
                             case 5 -> "Sat";
                             default -> "Sun";
                         };
+
+                        // Check if day has already been forecasted, if it has, exit current loop iteration, since we only want 1 of each day
+                        // Would take multiple readings, but OpenWeatherApi aren't clear what each reading is (AM/PM etc)
+                        // Could convert the unix time, but for the scale of this project, not required.
+                        if (!daysInForecast.contains(dayOfTheWeek)) {
+                            daysInForecast.add(dayOfTheWeek);
+                        } else  {
+                            break;
+                        }
 
                         // Create a new CurrentWeather object with the extracted values
                         WeatherForecast weatherForecast = new WeatherForecast(location, dayOfTheWeek, tempAsInt, humidity, windSpeed, description);
