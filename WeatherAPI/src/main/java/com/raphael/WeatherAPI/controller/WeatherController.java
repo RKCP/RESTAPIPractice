@@ -20,6 +20,14 @@ public class WeatherController {
         this.service = service;
     }
 
+    /**
+     * Retrieves the current weather for the specified location and adds it to the model.
+     *
+     * @param location the location for which to retrieve the current weather
+     * @param model    the model to add the current weather object
+     * @return the view name for displaying the current weather
+     * @throws Exception if the weather information is not available
+     */
     @GetMapping("/weather/{location}")
     public String getCurrentWeatherFromLocation(@PathVariable("location") String location, Model model) throws Exception {
 
@@ -34,14 +42,21 @@ public class WeatherController {
         }
     }
 
+    /**
+     * Retrieves the weather forecast for the specified location and adds it to the model.
+     *
+     * @param location the location for which to retrieve the weather forecast
+     * @param model    the model to add the list of weather forecasts
+     * @return the view name for displaying the weather forecast
+     * @throws Exception if the weather information is not available
+     */
     @GetMapping("/forecast/{location}")
     public String getForecastFromLocation(@PathVariable("location") String location, Model model) throws Exception {
 
-        List<WeatherForecast> optionalWeatherForecast = service.getWeatherForecast(location);
+        List<WeatherForecast> weatherForecasts = service.getWeatherForecast(location);
 
-        if (!optionalWeatherForecast.isEmpty()) {
-            List<WeatherForecast> weatherForecast = optionalWeatherForecast.stream().toList();
-            model.addAttribute("forecastedWeather", weatherForecast); // forecastedWeather is the variable we will use in HTML to access the properties
+        if (!weatherForecasts.isEmpty()) {
+            model.addAttribute("forecastedWeather", weatherForecasts); // forecastedWeather is the variable we will use in HTML to access the properties
             return "forecast-weather";
         } else {
             throw new Exception("Weather information not available for the specified location");
