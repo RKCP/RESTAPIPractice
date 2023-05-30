@@ -17,9 +17,9 @@ public class WeatherIconUtil {
             case 6:
                 return "fas fa-cloud-snow"; // Icon class for snow
             case 7:
-                return "fas fa-fog"; // Icon class for snow
+                return "fas fa-fog"; // Icon class for fog
             case 8:
-                return "fas fa-cloud"; // Icon class for snow
+                return "fas fa-cloud"; // Icon class for clouds
             default:
                 return "fas fa-sun"; // Default icon class for other conditions
         }
