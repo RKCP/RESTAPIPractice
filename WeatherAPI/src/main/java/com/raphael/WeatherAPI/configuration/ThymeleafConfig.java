@@ -4,7 +4,6 @@ import com.raphael.WeatherAPI.controller.WeatherIconUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-import org.thymeleaf.spring6.dialect.SpringStandardDialect;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 
 @Configuration
@@ -22,7 +21,6 @@ public class ThymeleafConfig {
     public SpringTemplateEngine templateEngine(SpringResourceTemplateResolver templateResolver) {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
         templateEngine.setTemplateResolver(templateResolver);
-        templateEngine.addDialect(new SpringStandardDialect());
         return templateEngine;
     }
 
@@ -31,3 +29,4 @@ public class ThymeleafConfig {
         return new WeatherIconUtil();
     }
 }
+

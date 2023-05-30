@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = "com.raphael.WeatherAPI.configuration")
+@ComponentScan(basePackages = {"com.raphael.WeatherAPI"})
 public class WeatherApiApplication {
 
 	public static void main(String[] args) {
