@@ -1,7 +1,7 @@
 package com.raphael.WeatherAPI.controller;
 
 public class WeatherIconUtil {
-    public static String getWeatherIconClass(String weatherDescription) {
+    public static String getWeatherIconClass(int weatherId) {
         // Map weather descriptions to corresponding Font Awesome icon classes
         if (weatherDescription.equalsIgnoreCase("cloudy")) {
             return "fas fa-cloud";

@@ -48,7 +48,7 @@
         </div>
 
         <div class="section">
-            <i th:class="${@weatherIconUtil.getIconClass(forecast.description)}"></i>
+            <i th:class="${@weatherIconUtil.getIconClass(forecast.id)}"></i>
             <p th:text="${forecast.description}"></p>
         </div>
     </div>
