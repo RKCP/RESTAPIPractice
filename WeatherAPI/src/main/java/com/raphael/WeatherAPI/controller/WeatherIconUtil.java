@@ -2,17 +2,26 @@ package com.raphael.WeatherAPI.controller;
 
 public class WeatherIconUtil {
     public static String getWeatherIconClass(int weatherId) {
-        // Map weather descriptions to corresponding Font Awesome icon classes
-        if (weatherDescription.equalsIgnoreCase("cloudy")) {
-            return "fas fa-cloud";
-        } else if (weatherDescription.equalsIgnoreCase("rainy")) {
-            return "fas fa-cloud-rain";
-        } else if (weatherDescription.equalsIgnoreCase("sunny")) {
+        // Map weather IDs to corresponding Font Awesome icon classes
+        if (weatherId == 800) {
             return "fas fa-sun";
         }
-        // Add more mappings as needed
 
-        // Default icon class
-        return "fas fa-question"; // or any other default icon class
+        switch (weatherId / 100) {
+            case 2:
+                return "fas fa-thunderstorm"; // Icon class for thunderstorm
+            case 3:
+                return "fas fa-cloud-drizzle"; // Icon class for drizzle
+            case 5:
+                return "fas fa-cloud-rain"; // Icon class for rain
+            case 6:
+                return "fas fa-cloud-snow"; // Icon class for snow
+            case 7:
+                return "fas fa-fog"; // Icon class for snow
+            case 8:
+                return "fas fa-cloud"; // Icon class for snow
+            default:
+                return "fas fa-sun"; // Default icon class for other conditions
+        }
     }
 }

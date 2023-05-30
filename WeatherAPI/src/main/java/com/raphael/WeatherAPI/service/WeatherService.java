@@ -76,6 +76,7 @@ public class WeatherService {
                     int humidity = (Integer) currentWeatherResponse.main().get("humidity");
                     Double windSpeed = (Double) currentWeatherResponse.wind().get("speed");
                     String description = (String) currentWeatherResponse.weather().get(0).get("description");
+                    int id = (int) currentWeatherResponse.weather().get(0).get("id");
 
                     // Capitalize first letter of given cityName and remove underscores
                     String location = cityName
@@ -84,7 +85,7 @@ public class WeatherService {
 
 
                     // Create a new CurrentWeather object with the extracted values
-                    CurrentWeather currentWeather = new CurrentWeather(location, tempAsInt, humidity, windSpeed, description);
+                    CurrentWeather currentWeather = new CurrentWeather(location, id, tempAsInt, humidity, windSpeed, description);
 
                     return Optional.of(currentWeather);
                 }

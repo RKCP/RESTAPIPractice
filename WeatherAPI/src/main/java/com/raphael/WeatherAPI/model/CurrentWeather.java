@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CurrentWeather(String location,
+                             int id,
                              @JsonProperty("temp") int temperature,
                              @JsonProperty("humidity") int humidity,
                              @JsonProperty("speed") Double windSpeed,
