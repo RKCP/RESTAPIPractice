@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class WeatherControllerTest {
 
     @Mock
-    private WeatherService weatherService;
+    private WeatherService weatherServiceMock;
 
     @InjectMocks
     private WeatherController weatherController;
@@ -31,7 +31,7 @@ class WeatherControllerTest {
         // Given
         String location = "London";
         CurrentWeather currentWeatherMock = new CurrentWeather(location, 804, 20, 80, 10.0, "Cloudy");
-        when(weatherService.getCurrentWeather(location)).thenReturn(Optional.of(currentWeatherMock)); // mock that when the weatherService.getCurrentWeather("London") method is called, thenReturn our created currentWeather object
+        when(weatherServiceMock.getCurrentWeather(location)).thenReturn(Optional.of(currentWeatherMock)); // mock that when the weatherService.getCurrentWeather("London") method is called, thenReturn our created currentWeather object
         Model model = new ExtendedModelMap(); // create a model that we need to pass to the controller
 
         // When
@@ -45,8 +45,8 @@ class WeatherControllerTest {
     @Test
     void getCurrentWeatherFromLocation_WeatherNotAvailable_ThrowsException() throws Exception {
         // Arrange
-        String location = "Paris";
-        when(weatherService.getCurrentWeather(location)).thenReturn(Optional.empty());
+        String location = "Par1s";
+        when(weatherServiceMock.getCurrentWeather(location)).thenReturn(Optional.empty());
         Model model = new ExtendedModelMap();
 
         // Act and Assert
