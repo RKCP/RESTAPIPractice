@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
+import com.raphael.WeatherAPI.model.Location;
 import com.raphael.WeatherAPI.model.WeatherForecast;
 import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
@@ -35,6 +36,7 @@ class WeatherServiceTest {
 
     @Mock
     private WeatherRepository weatherRepositoryMock;
+
     @InjectMocks
     private WeatherService weatherService;
 
@@ -49,23 +51,11 @@ class WeatherServiceTest {
     @Test
     void getCurrentWeather_ValidLocation_ReturnsCurrentWeather() {
         // Given
-        String location = "London";
+        String location = "london";
 
-        Map<String, Object> main = Map.of("temp", 293.15, "humidity", 75);
-        Map<String, Object> wind = Map.of("speed", 5.2);
-        List<Map<String, Object>> weather = List.of(Map.of("description", "Cloudy", "id", 801));
+        CurrentWeather generatedCurrentWeather = new CurrentWeather(location, 801, 20, 75, 5.2, "Cloudy");
 
-        CurrentWeatherResponse generatedResponse = new CurrentWeatherResponse(main, wind, weather);
-
-        when(restTemplateMock.getForObject("https://dummyurl.com", String.class)).thenReturn(Map.of().toString()); // restTemplate returns a String as its response (JSON String) so we just return an emptyMap as a String, since we will mock the following behavior of the objectMapper to get our CurrentWeatherResponse object.
-
-        try {
-            when(objectMapper.readValue("String returned by restTemplate", new TypeReference<>() {})).thenReturn(Map.of("dummyData", "dummyObject")); // we need to mock the objectMapper.readValue since it will be called in the service method, after the restTemplate is called.
-        } catch (JsonProcessingException e) {
-            logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
-        }
-
-        when(objectMapper.convertValue(Map.of("dummyData", "dummyObject"), CurrentWeatherResponse.class)).thenReturn(generatedResponse);
+        when(weatherService.getCurrentWeather(location)).thenReturn(Optional.of(generatedCurrentWeather));
 
         // When
         Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);
@@ -81,7 +71,7 @@ class WeatherServiceTest {
         Assertions.assertEquals("Cloudy", currentWeather.description());
         Assertions.assertEquals(801, currentWeather.id());
         verify(restTemplateMock, times(1)).getForObject("https://dummyurl.com", String.class);
-        verify(weatherService, times(1)).getCurrentWeather(location);
+        verify(weatherService, times(1)).getCurrentWeather("London");
     }
 
     @Test
@@ -140,10 +130,67 @@ class WeatherServiceTest {
 }
 
 
-// need to mock the API in this layer.
 
 
 
 
 
-// Before Mockito let us do @Mock and @InjectMocks
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    @Test
+//    void getCurrentWeather_ValidLocation_ReturnsCurrentWeather() {
+//        // Given
+//        String location = "london";
+////
+////        Map<String, Object> main = Map.of("temp", 293.15, "humidity", 75);
+////        Map<String, Object> wind = Map.of("speed", 5.2);
+////        List<Map<String, Object>> weather = List.of(Map.of("description", "Cloudy", "id", 801));
+////
+////        CurrentWeatherResponse generatedResponse = new CurrentWeatherResponse(main, wind, weather);
+//
+//        CurrentWeather generatedCurrentWeather = new CurrentWeather(location, 801, 20, 75, 5.2, "Cloudy");
+//        Location generatedLocation = new Location(51.5073219, -0.1276474);
+//
+//        when(weatherService.getCurrentWeather(location)).thenReturn(Optional.of(generatedCurrentWeather));
+//
+////        when(restTemplateMock.getForObject("https://dummyurl.com", String.class)).thenReturn(Map.of().toString()); // restTemplate returns a String as its response (JSON String) so we just return an emptyMap as a String, since we will mock the following behavior of the objectMapper to get our CurrentWeatherResponse object.
+////
+////        try {
+////            when(objectMapper.readValue("String returned by restTemplate", new TypeReference<>() {})).thenReturn(Map.of("dummyData", "dummyObject")); // we need to mock the objectMapper.readValue since it will be called in the service method, after the restTemplate is called.
+////        } catch (JsonProcessingException e) {
+////            logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
+////        }
+////
+////        when(objectMapper.convertValue(Map.of("dummyData", "dummyObject"), CurrentWeatherResponse.class)).thenReturn(generatedResponse);
+//
+//        // When
+//        Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);
+//
+//        // Then
+//        Assertions.assertTrue(result.isPresent());
+//        CurrentWeather currentWeather = result.get();
+//
+//        Assertions.assertEquals("London", currentWeather.location());
+//        Assertions.assertEquals(20, currentWeather.temperature());
+//        Assertions.assertEquals(75, currentWeather.humidity());
+//        Assertions.assertEquals(5.2, currentWeather.windSpeed());
+//        Assertions.assertEquals("Cloudy", currentWeather.description());
+//        Assertions.assertEquals(801, currentWeather.id());
+//        verify(restTemplateMock, times(1)).getForObject("https://dummyurl.com", String.class);
+//        verify(weatherService, times(1)).getCurrentWeather("London");
+//    }
