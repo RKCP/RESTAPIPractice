@@ -133,12 +133,18 @@ public class WeatherService {
         try {
             URI uri = new URI(baseUri + "?q=" + cityName + "&limit=1&appid=" + API_KEY);
             String jsonResponse = restTemplate.getForObject(uri, String.class);
+
+            // testing to see if we can just convert this response straight into our object
+            // Map the string Response staight to a JSON object instead, and then get what we want from inside that object, and save to Location Object.....
+            Location myLocation = objectMapper.readValue(jsonResponse, Location.class);
+
+
             List<Map<String, Object>> responseList = objectMapper.readValue(
                     jsonResponse,
                     objectMapper.getTypeFactory().constructCollectionType(
                             List.class,
                             Map.class)
-            ); // to make things much easier, just create a class which takes in a List/Map as fields and set this response as a class rather than this.
+            ); // to make things much easier, just create a class which takes in responseList as fields and set this response as a class rather than this.
 
             if (!responseList.isEmpty()) {
                 Location location = objectMapper.convertValue(responseList.get(0), Location.class);
