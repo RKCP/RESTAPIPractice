@@ -1,12 +1,9 @@
 package com.raphael.WeatherAPI;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
 import com.raphael.WeatherAPI.model.Location;
-import com.raphael.WeatherAPI.model.WeatherForecast;
-import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import com.raphael.WeatherAPI.service.WeatherService;
 import org.junit.jupiter.api.Assertions;
@@ -19,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,7 +29,7 @@ class WeatherServiceTest {
     private RestTemplate restTemplateMock;
 
     @Mock
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapperMock;
 
     @Mock
     private WeatherRepository weatherRepositoryMock;
@@ -45,17 +42,40 @@ class WeatherServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        weatherService = new WeatherService(restTemplateMock, weatherRepositoryMock);
+        weatherService = new WeatherService(restTemplateMock, weatherRepositoryMock, objectMapperMock);
     }
 
     @Test
     void getCurrentWeather_ValidLocation_ReturnsCurrentWeather() {
         // Given
         String location = "london";
+        Object dummyObject = new Object();
+        List<Map<String, Object>> dummyList = List.of(Map.of("Dummy String", dummyObject));
+        Location generatedLocation = new Location(51.5073219, -0.1276474);
+
+        try {
+            URI uri = new URI("https://api.openweathermap.org/geo/1.0/direct?q=london&limit=1&appid=e30fcfa99c63f0e68d5d5a4e7bdd089a");
+
+            // mock restTemplate behaviour in getLatLonFromLocation()
+            when(restTemplateMock.getForObject(uri, String.class)).thenReturn("Dummy JSON Response");
+
+            // mock objectMapper.readValue behaviour in getLatLonFromLocation()
+            when(objectMapperMock.readValue("Dummy JSON Response", objectMapperMock.getTypeFactory().constructCollectionType(List.class, Map.class)).thenReturn(dummyList);
+
+            // mock objectMapper.convertValue behaviour in getLatLonFromLocation()
+            when(objectMapperMock.convertValue(dummyObject, Location.class)).thenReturn(generatedLocation);
+
+        } catch (Exception e) {
+            logger.error("Error occurred while generating URI in test or deserializing the location data: {}", e.getMessage());
+        }
 
         CurrentWeather generatedCurrentWeather = new CurrentWeather(location, 801, 20, 75, 5.2, "Cloudy");
 
+
+        //when(weatherService.getLatLonFromLocation(location)).thenReturn(Optional.of(generatedLocation));
+
         when(weatherService.getCurrentWeather(location)).thenReturn(Optional.of(generatedCurrentWeather));
+
 
         // When
         Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);

@@ -25,12 +25,13 @@ public class WeatherService {
     private final String API_KEY = "e30fcfa99c63f0e68d5d5a4e7bdd089a";
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
     private final RestTemplate restTemplate;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
     private final WeatherRepository weatherRepository;
 
-    public WeatherService(RestTemplate restTemplate, WeatherRepository weatherRepository) {
+    public WeatherService(RestTemplate restTemplate, WeatherRepository weatherRepository, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.weatherRepository = weatherRepository;
+        this.objectMapper = objectMapper;
     }
 
 
@@ -126,13 +127,18 @@ public class WeatherService {
      * @param cityName the name of the city to retrieve the latitude and longitude for
      * @return an optional Location object containing the latitude and longitude for the given city
      */
-    private Optional<Location> getLatLonFromLocation(String cityName) {
+    public Optional<Location> getLatLonFromLocation(String cityName) {
         String baseUri = "https://api.openweathermap.org/geo/1.0/direct";
 
         try {
             URI uri = new URI(baseUri + "?q=" + cityName + "&limit=1&appid=" + API_KEY);
             String jsonResponse = restTemplate.getForObject(uri, String.class);
-            List<Map<String, Object>> responseList = objectMapper.readValue(jsonResponse, new TypeReference<>(){});
+            List<Map<String, Object>> responseList = objectMapper.readValue(
+                    jsonResponse,
+                    objectMapper.getTypeFactory().constructCollectionType(
+                            List.class,
+                            Map.class)
+            ); // to make things much easier, just create a class which takes in a List/Map as fields and set this response as a class rather than this.
 
             if (!responseList.isEmpty()) {
                 Location location = objectMapper.convertValue(responseList.get(0), Location.class);
