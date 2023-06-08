@@ -136,20 +136,34 @@ public class WeatherService {
 
             // testing to see if we can just convert this response straight into our object
             // Map the string Response staight to a JSON object instead, and then get what we want from inside that object, and save to Location Object.....
-            Location myLocation = objectMapper.readValue(jsonResponse, Location.class);
+
+            // Using TypeReference to specify the object type. Have to do this due to awkward data that is sent from the API
+            List<Map<String, Object>> jsonList = objectMapper.readValue(jsonResponse, new TypeReference<>() {});
+
+            // Access the values in each JSON object in the list
+//            for (Map<String, Object> jsonMap : jsonList) {
+//                String name = (String) jsonMap.get("name");
+//                Map<String, Object> localNames = (Map<String, Object>) jsonMap.get("local_names");
+//
+//                System.out.println("Name: " + name);
+//                System.out.println("Local Names: " + localNames);
+//            }
+            Location myLocation = objectMapper.convertValue(jsonList.get(0), Location.class);
+
+            return Optional.of(myLocation);
 
 
-            List<Map<String, Object>> responseList = objectMapper.readValue(
-                    jsonResponse,
-                    objectMapper.getTypeFactory().constructCollectionType(
-                            List.class,
-                            Map.class)
-            ); // to make things much easier, just create a class which takes in responseList as fields and set this response as a class rather than this.
-
-            if (!responseList.isEmpty()) {
-                Location location = objectMapper.convertValue(responseList.get(0), Location.class);
-                return Optional.of(location);
-            }
+//            List<Map<String, Object>> responseList = objectMapper.readValue(
+//                    jsonResponse,
+//                    objectMapper.getTypeFactory().constructCollectionType(
+//                            List.class,
+//                            Map.class)
+//            ); // to make things much easier, just create a class which takes in responseList as fields and set this response as a class rather than this.
+//
+//            if (!responseList.isEmpty()) {
+//                Location location = objectMapper.convertValue(responseList.get(0), Location.class);
+//                return Optional.of(location);
+//            }
 
         } catch (Exception e) {
             logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());

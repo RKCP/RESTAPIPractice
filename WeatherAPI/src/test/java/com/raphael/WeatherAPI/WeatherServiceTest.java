@@ -11,12 +11,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,20 +52,35 @@ class WeatherServiceTest {
         // Given
         String location = "london";
         Object dummyObject = new Object();
-        List<Map<String, Object>> dummyList = List.of(Map.of("Dummy String", dummyObject));
+
+        List<Map<String, Object>> expectedResult = new ArrayList<>();
+        Map<String, Object> data = Map.of("name", "London", "lat", 51.5074, "lon", -0.1278);
+        expectedResult.add(data);
+
         Location generatedLocation = new Location(51.5073219, -0.1276474);
+        String dummyJsonList = "[{\"name\":\"London\",\"lat\":51.5073219,\"lon\":-0.1276474,\"country\":\"GB\",\"state\":\"England\"}]";
+        String dummyJsonMap = "{\"name\":\"London\",\"lat\":51.5074,\"lon\":-0.1278}";
+
+        List<Map<String, Object>> jsonList = List.of(
+                Map.of("name", "London", "lat", 51.5074, "lon", -0.1278)
+        );
+        Location expectedLocation = new Location(51.5074, 0.1278);
+
+
 
         try {
             URI uri = new URI("https://api.openweathermap.org/geo/1.0/direct?q=london&limit=1&appid=e30fcfa99c63f0e68d5d5a4e7bdd089a");
 
             // mock restTemplate behaviour in getLatLonFromLocation()
-            when(restTemplateMock.getForObject(uri, String.class)).thenReturn("Dummy JSON Response");
+            when(restTemplateMock.getForObject(uri, String.class))
+                    .thenReturn(dummyJsonList);
 
             // mock objectMapper.readValue behaviour in getLatLonFromLocation()
-            when(objectMapperMock.readValue("Dummy JSON Response", objectMapperMock.getTypeFactory().constructCollectionType(List.class, Map.class)).thenReturn(dummyList);
+            when(objectMapperMock.readValue(anyString(), any(TypeReference.class)))
+                    .thenReturn(expectedResult);
 
             // mock objectMapper.convertValue behaviour in getLatLonFromLocation()
-            when(objectMapperMock.convertValue(dummyObject, Location.class)).thenReturn(generatedLocation);
+            when(objectMapperMock.convertValue(any(Map.class), eq(Location.class))).thenReturn(generatedLocation);
 
         } catch (Exception e) {
             logger.error("Error occurred while generating URI in test or deserializing the location data: {}", e.getMessage());
