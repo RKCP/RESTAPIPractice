@@ -3,6 +3,9 @@ package com.raphael.WeatherAPI.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.Location;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
+import com.raphael.WeatherAPI.service.WeatherService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 
@@ -17,6 +20,8 @@ public class DataInitializer {
 
     private final WeatherRepository weatherRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+
     public DataInitializer(WeatherRepository weatherRepository) {
         this.weatherRepository = weatherRepository;
     }
@@ -25,7 +30,7 @@ public class DataInitializer {
     public void initializeData() {
         try {
             // Load the JSON file
-            InputStream inputStream = getClass().getResourceAsStream("/data.json");
+            InputStream inputStream = getClass().getResourceAsStream("src/main/resources/data/locations.json");
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
             // Parse the JSON and populate the repository
@@ -33,8 +38,7 @@ public class DataInitializer {
             Location[] locationData = objectMapper.readValue(reader, Location[].class);
             weatherRepository.saveAll(Arrays.asList(locationData));
         } catch (IOException e) {
-            // Handle the IOException
-            e.printStackTrace(); // or log the error
+            logger.error("Error occurred while retrieving the location data file in DataInitializer class: {}", e.getMessage());
         }
     }
 }
