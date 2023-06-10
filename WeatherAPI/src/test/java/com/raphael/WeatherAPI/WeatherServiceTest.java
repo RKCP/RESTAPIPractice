@@ -34,10 +34,18 @@ class WeatherServiceTest {
     private ObjectMapper objectMapperMock;
 
     @Mock
+    private RestTemplate restTemplateMockLatLon;
+
+    @Mock
+    private ObjectMapper objectMapperMockLatLon;
+
+    @Mock
     private WeatherRepository weatherRepositoryMock;
 
     @InjectMocks
     private WeatherService weatherService;
+
+    private WeatherService weatherServiceLatLon;
 
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
 
@@ -45,6 +53,7 @@ class WeatherServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         weatherService = new WeatherService(restTemplateMock, weatherRepositoryMock, objectMapperMock);
+        weatherServiceLatLon = new WeatherService(restTemplateMockLatLon, weatherRepositoryMock, objectMapperMockLatLon);
     }
 
     @Test
@@ -67,20 +76,30 @@ class WeatherServiceTest {
         Location expectedLocation = new Location(51.5074, 0.1278);
 
 
+        String dummyGetWeatherJson = "{\"weather\":[{\"main\":\"Clear\"}],\"main\":{\"temp\":294.31,\"feels_like\":293.87,\"temp_min\":291.38,\"temp_max\":297.05,\"pressure\":1016,\"humidity\":53},\"wind\":{\"speed\":7.2,\"deg\":110}}";
+
+
+
 
         try {
-            URI uri = new URI("https://api.openweathermap.org/geo/1.0/direct?q=london&limit=1&appid=e30fcfa99c63f0e68d5d5a4e7bdd089a");
+//            URI uri = new URI("https://api.openweathermap.org/geo/1.0/direct?q=london&limit=1&appid=e30fcfa99c63f0e68d5d5a4e7bdd089a");
 
-            // mock restTemplate behaviour in getLatLonFromLocation()
-            when(restTemplateMock.getForObject(uri, String.class))
-                    .thenReturn(dummyJsonList);
+            // mocking restTemplate behavior in getCurrentWeather
+            Mockito.when(restTemplateMock.getForObject(Mockito.any(URI.class), Mockito.eq(String.class)))
+                    .thenReturn(dummyGetWeatherJson);
 
-            // mock objectMapper.readValue behaviour in getLatLonFromLocation()
-            when(objectMapperMock.readValue(anyString(), any(TypeReference.class)))
-                    .thenReturn(expectedResult);
+            // using mock spying to handle getLatLonFromLocation() restTemplate/objectMapper
 
-            // mock objectMapper.convertValue behaviour in getLatLonFromLocation()
-            when(objectMapperMock.convertValue(any(Map.class), eq(Location.class))).thenReturn(generatedLocation);
+//            // mock restTemplate behaviour in getLatLonFromLocation()
+//            when(restTemplateMock.getForObject(uri, String.class))
+//                    .thenReturn(dummyJsonList);
+//
+//            // mock objectMapper.readValue behaviour in getLatLonFromLocation()
+//            when(objectMapperMock.readValue(anyString(), any(TypeReference.class)))
+//                    .thenReturn(expectedResult);
+//
+//            // mock objectMapper.convertValue behaviour in getLatLonFromLocation()
+//            when(objectMapperMock.convertValue(any(Map.class), eq(Location.class))).thenReturn(generatedLocation);
 
         } catch (Exception e) {
             logger.error("Error occurred while generating URI in test or deserializing the location data: {}", e.getMessage());
