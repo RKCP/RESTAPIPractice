@@ -47,8 +47,8 @@ public class WeatherService {
 
         if (optionalLocation.isPresent()) {
             Location actualLocation = optionalLocation.get();
-            String uri = "https://api.openweathermap.org/data/2.5/weather?lat=" + actualLocation.latitude() +
-                    "&lon=" + actualLocation.longitude() + "&appid=" + API_KEY;
+            String uri = "https://api.openweathermap.org/data/2.5/weather?lat=" + actualLocation.coordinates().latitude() +
+                    "&lon=" + actualLocation.coordinates().longitude() + "&appid=" + API_KEY;
 
             try {
                 String response = restTemplate.getForObject(uri, String.class);
@@ -83,8 +83,8 @@ public class WeatherService {
 
         if (optionalLocation.isPresent()) {
             Location actualLocation = optionalLocation.get();
-            String uri = "https://api.openweathermap.org/data/2.5/forecast?lat=" + actualLocation.latitude() +
-                    "&lon=" + actualLocation.longitude() + "&appid=" + API_KEY;
+            String uri = "https://api.openweathermap.org/data/2.5/forecast?lat=" + actualLocation.coordinates().latitude() +
+                    "&lon=" + actualLocation.coordinates().longitude() + "&appid=" + API_KEY;
 
             try {
                 String response = restTemplate.getForObject(uri, String.class);

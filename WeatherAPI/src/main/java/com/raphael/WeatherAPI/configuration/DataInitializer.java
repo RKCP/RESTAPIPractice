@@ -30,13 +30,14 @@ public class DataInitializer {
     public void initializeData() {
         try {
             // Load the JSON file
-            InputStream inputStream = getClass().getResourceAsStream("src/main/resources/data/locations.json");
+            InputStream inputStream = getClass().getResourceAsStream("/data/locations.json");
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
             // Parse the JSON and populate the repository
             ObjectMapper objectMapper = new ObjectMapper();
             Location[] locationData = objectMapper.readValue(reader, Location[].class);
             weatherRepository.saveAll(Arrays.asList(locationData));
+            logger.info("Successfully loaded locations JSON into repository");
         } catch (IOException e) {
             logger.error("Error occurred while retrieving the location data file in DataInitializer class: {}", e.getMessage());
         }
