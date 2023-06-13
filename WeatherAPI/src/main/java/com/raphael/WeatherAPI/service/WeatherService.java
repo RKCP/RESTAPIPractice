@@ -8,6 +8,7 @@ import com.raphael.WeatherAPI.model.WeatherForecast;
 import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.model.response.WeatherForecastResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
+import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,9 @@ public class WeatherService {
      */
     public Optional<CurrentWeather> getCurrentWeather(String input) {
         String cityName = formatLocationString(input);
-        Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
+        String location = getLocationName(cityName);
+        //Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
+        Optional<Location> optionalLocation = weatherRepository.findById(location);
 
         if (optionalLocation.isPresent()) {
             Location actualLocation = optionalLocation.get();
@@ -79,7 +82,8 @@ public class WeatherService {
     public List<WeatherForecast> getWeatherForecast(String input) {
         String cityName = formatLocationString(input);
         String location = getLocationName(cityName);
-        Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
+        //Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
+        Optional<Location> optionalLocation = weatherRepository.findById(location);
 
         if (optionalLocation.isPresent()) {
             Location actualLocation = optionalLocation.get();
