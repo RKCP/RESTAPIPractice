@@ -9,13 +9,11 @@ import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.model.response.WeatherForecastResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import org.apache.commons.text.WordUtils;
-import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +43,6 @@ public class WeatherService {
      */
     public Optional<CurrentWeather> getCurrentWeather(String input) {
         String cityNameFormatted = formatLocationString(input);
-        //String location = getLocationName(input);
-        //Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
         Optional<Location> optionalLocation = weatherRepository.findById(cityNameFormatted);
 
         if (optionalLocation.isPresent()) {
@@ -82,8 +78,6 @@ public class WeatherService {
      */
     public List<WeatherForecast> getWeatherForecast(String input) {
         String cityNameFormatted = formatLocationString(input);
-        //String location = getLocationName(cityName);
-        //Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
         Optional<Location> optionalLocation = weatherRepository.findById(cityNameFormatted);
 
         if (optionalLocation.isPresent()) {
@@ -123,58 +117,6 @@ public class WeatherService {
             logger.error("Location data is not available for the given city: {}", cityNameFormatted);
         }
         return new ArrayList<>();
-    }
-
-
-    /**
-     * Helper method that generates the latitude and longitude based on the given city name.
-     *
-     * @param cityName the name of the city to retrieve the latitude and longitude for
-     * @return an optional Location object containing the latitude and longitude for the given city
-     */
-    public Optional<Location> getLatLonFromLocation(String cityName) {
-        String baseUri = "https://api.openweathermap.org/geo/1.0/direct";
-
-        try {
-            URI uri = new URI(baseUri + "?q=" + cityName + "&limit=1&appid=" + API_KEY);
-            String jsonResponse = restTemplate.getForObject(uri, String.class);
-
-            // testing to see if we can just convert this response straight into our object
-            // Map the string Response staight to a JSON object instead, and then get what we want from inside that object, and save to Location Object.....
-
-            // Using TypeReference to specify the object type. Have to do this due to awkward data that is sent from the API
-            List<Map<String, Object>> jsonList = objectMapper.readValue(jsonResponse, new TypeReference<>() {});
-
-            // Access the values in each JSON object in the list
-//            for (Map<String, Object> jsonMap : jsonList) {
-//                String name = (String) jsonMap.get("name");
-//                Map<String, Object> localNames = (Map<String, Object>) jsonMap.get("local_names");
-//
-//                System.out.println("Name: " + name);
-//                System.out.println("Local Names: " + localNames);
-//            }
-            Location myLocation = objectMapper.convertValue(jsonList.get(0), Location.class);
-
-            return Optional.of(myLocation);
-
-
-//            List<Map<String, Object>> responseList = objectMapper.readValue(
-//                    jsonResponse,
-//                    objectMapper.getTypeFactory().constructCollectionType(
-//                            List.class,
-//                            Map.class)
-//            ); // to make things much easier, just create a class which takes in responseList as fields and set this response as a class rather than this.
-//
-//            if (!responseList.isEmpty()) {
-//                Location location = objectMapper.convertValue(responseList.get(0), Location.class);
-//                return Optional.of(location);
-//            }
-
-        } catch (Exception e) {
-            logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
-        }
-
-        return Optional.empty();
     }
 
 
@@ -225,8 +167,7 @@ public class WeatherService {
 
         return null;
     }
-
-
+    
     /**
      * Formats the location string by replacing spaces with underscores and converting it to lowercase.
      *
@@ -236,18 +177,6 @@ public class WeatherService {
     private String formatLocationString(String input) {
         return WordUtils.capitalizeFully(input.replace("_", " "));
     }
-
-
-    /**
-     * Retrieves the location name by converting the city name to title case and replacing underscores with spaces.
-     *
-     * @param cityName the name of the city
-     * @return the formatted location name
-     */
-    private String getLocationName(String cityName) {
-        return WordUtils.capitalizeFully(cityName.replace("_", " "));
-    }
-
 
     /**
      * Retrieves the day of the week based on the given integer value.

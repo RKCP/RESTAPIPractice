@@ -6,8 +6,4 @@ import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface WeatherRepository extends MongoRepository<Location, String> {
-
-    @Query("SELECT * FROM locations WHERE locations.name = ?1")
-    Location[] findByLocationName(String locationName);
-}
+public interface WeatherRepository extends MongoRepository<Location, String> {}
