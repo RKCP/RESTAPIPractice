@@ -167,7 +167,7 @@ public class WeatherService {
 
         return null;
     }
-    
+
     /**
      * Formats the location string by replacing spaces with underscores and converting it to lowercase.
      *
