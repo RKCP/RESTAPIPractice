@@ -8,6 +8,7 @@ import com.raphael.WeatherAPI.model.WeatherForecast;
 import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.model.response.WeatherForecastResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
+import org.apache.commons.text.WordUtils;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,10 +44,10 @@ public class WeatherService {
      * @return the current weather details for the given location
      */
     public Optional<CurrentWeather> getCurrentWeather(String input) {
-        String cityName = formatLocationString(input);
-        String location = getLocationName(cityName);
+        String cityNameFormatted = formatLocationString(input);
+        //String location = getLocationName(input);
         //Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
-        Optional<Location> optionalLocation = weatherRepository.findById(location);
+        Optional<Location> optionalLocation = weatherRepository.findById(cityNameFormatted);
 
         if (optionalLocation.isPresent()) {
             Location actualLocation = optionalLocation.get();
@@ -59,7 +60,7 @@ public class WeatherService {
 
                 if (!responseMap.isEmpty()) {
                     CurrentWeatherResponse currentWeatherResponse = objectMapper.convertValue(responseMap, CurrentWeatherResponse.class);
-                    CurrentWeather currentWeather = mapCurrentWeather(currentWeatherResponse, cityName);
+                    CurrentWeather currentWeather = mapCurrentWeather(currentWeatherResponse, cityNameFormatted);
                     return Optional.of(currentWeather);
                 }
 
@@ -67,7 +68,7 @@ public class WeatherService {
                 logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
             }
         } else {
-            logger.error("Location data is not available for the given city: {}", cityName);
+            logger.error("Location data is not available for the given city: {}", cityNameFormatted);
         }
         return Optional.empty();
     }
@@ -80,10 +81,10 @@ public class WeatherService {
      * @return a list of weather forecasts for the next few days
      */
     public List<WeatherForecast> getWeatherForecast(String input) {
-        String cityName = formatLocationString(input);
-        String location = getLocationName(cityName);
+        String cityNameFormatted = formatLocationString(input);
+        //String location = getLocationName(cityName);
         //Optional<Location> optionalLocation = getLatLonFromLocation(cityName);
-        Optional<Location> optionalLocation = weatherRepository.findById(location);
+        Optional<Location> optionalLocation = weatherRepository.findById(cityNameFormatted);
 
         if (optionalLocation.isPresent()) {
             Location actualLocation = optionalLocation.get();
@@ -102,7 +103,7 @@ public class WeatherService {
 
                     if (!listObjectMap.isEmpty()) {
                         WeatherForecastResponse weatherForecastResponse = objectMapper.convertValue(listObjectMap, WeatherForecastResponse.class);
-                        WeatherForecast weatherForecast = mapWeatherForecast(weatherForecastResponse, location, daysInForecast);
+                        WeatherForecast weatherForecast = mapWeatherForecast(weatherForecastResponse, cityNameFormatted, daysInForecast);
 
                         if (weatherForecast != null) {
                             weatherForecasts.add(weatherForecast);
@@ -119,7 +120,7 @@ public class WeatherService {
                 logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
             }
         } else {
-            logger.error("Location data is not available for the given city: {}", cityName);
+            logger.error("Location data is not available for the given city: {}", cityNameFormatted);
         }
         return new ArrayList<>();
     }
@@ -233,7 +234,7 @@ public class WeatherService {
      * @return the formatted location string
      */
     private String formatLocationString(String input) {
-        return input.replace(" ", "_").toLowerCase();
+        return WordUtils.capitalizeFully(input.replace("_", " "));
     }
 
 
@@ -244,7 +245,7 @@ public class WeatherService {
      * @return the formatted location name
      */
     private String getLocationName(String cityName) {
-        return cityName.substring(0, 1).toUpperCase() + cityName.substring(1).replace("_", " ");
+        return WordUtils.capitalizeFully(cityName.replace("_", " "));
     }
 
 
@@ -266,3 +267,7 @@ public class WeatherService {
         };
     }
 }
+
+
+
+// TODO: Add another HTML page in front of weather/forecast pages that takes in the location name from user input in a search box, and then redirects to forecast or current weather based on a button click like google search. instead of feeling lucky and search, it will say Current Weather and Forecasted, with the big search bar above it, and above the search bar, Weather Checker
