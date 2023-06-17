@@ -4,27 +4,27 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
 import com.raphael.WeatherAPI.model.Location;
+import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import com.raphael.WeatherAPI.service.WeatherService;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class WeatherServiceTest {
 
     @Mock
@@ -34,155 +34,119 @@ class WeatherServiceTest {
     private ObjectMapper objectMapperMock;
 
     @Mock
-    private RestTemplate restTemplateMockLatLon;
-
-    @Mock
-    private ObjectMapper objectMapperMockLatLon;
-
-    @Mock
     private WeatherRepository weatherRepositoryMock;
 
     @InjectMocks
     private WeatherService weatherService;
 
-    private WeatherService weatherServiceLatLon;
-
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        weatherService = new WeatherService(restTemplateMock, weatherRepositoryMock, objectMapperMock);
-        weatherServiceLatLon = new WeatherService(restTemplateMockLatLon, weatherRepositoryMock, objectMapperMockLatLon);
-    }
 
     @Test
     void getCurrentWeather_ValidLocation_ReturnsCurrentWeather() {
         // Given
-        String location = "london";
-        Object dummyObject = new Object();
-
-        List<Map<String, Object>> expectedResult = new ArrayList<>();
-        Map<String, Object> data = Map.of("name", "London", "lat", 51.5074, "lon", -0.1278);
-        expectedResult.add(data);
-
-        Location generatedLocation = new Location(51.5073219, -0.1276474);
-        String dummyJsonList = "[{\"name\":\"London\",\"lat\":51.5073219,\"lon\":-0.1276474,\"country\":\"GB\",\"state\":\"England\"}]";
-        String dummyJsonMap = "{\"name\":\"London\",\"lat\":51.5074,\"lon\":-0.1278}";
-
-        List<Map<String, Object>> jsonList = List.of(
-                Map.of("name", "London", "lat", 51.5074, "lon", -0.1278)
-        );
-        Location expectedLocation = new Location(51.5074, 0.1278);
-
-
         String dummyGetWeatherJson = "{\"weather\":[{\"main\":\"Clear\"}],\"main\":{\"temp\":294.31,\"feels_like\":293.87,\"temp_min\":291.38,\"temp_max\":297.05,\"pressure\":1016,\"humidity\":53},\"wind\":{\"speed\":7.2,\"deg\":110}}";
 
+        Map<String, Object> data = Map.of("name", "London", "lat", 51.5074, "lon", -0.1278);
 
+        CurrentWeatherResponse currentWeatherResponse = new CurrentWeatherResponse(
+                Map.of("temp", 294.31, "humidity", 53),
+                Map.of("speed", 7.2),
+                List.of(Map.of("id", 801, "description", "Few clouds"))
+        );
 
+        Location locationObject = new Location("London", new Location.Coordinates(51.50853, -0.12574));
 
         try {
-//            URI uri = new URI("https://api.openweathermap.org/geo/1.0/direct?q=london&limit=1&appid=e30fcfa99c63f0e68d5d5a4e7bdd089a");
+            Mockito.when(weatherRepositoryMock.findById(anyString()))
+                    .thenReturn(Optional.of(locationObject));
 
-            // mocking restTemplate behavior in getCurrentWeather
-            Mockito.when(restTemplateMock.getForObject(Mockito.any(URI.class), Mockito.eq(String.class)))
+            Mockito.when(restTemplateMock.getForObject(anyString(), Mockito.eq(String.class)))
                     .thenReturn(dummyGetWeatherJson);
 
-            // using mock spying to handle getLatLonFromLocation() restTemplate/objectMapper
+            Mockito.when(objectMapperMock.readValue(anyString(), any(TypeReference.class)))
+                    .thenReturn(data);
 
-//            // mock restTemplate behaviour in getLatLonFromLocation()
-//            when(restTemplateMock.getForObject(uri, String.class))
-//                    .thenReturn(dummyJsonList);
-//
-//            // mock objectMapper.readValue behaviour in getLatLonFromLocation()
-//            when(objectMapperMock.readValue(anyString(), any(TypeReference.class)))
-//                    .thenReturn(expectedResult);
-//
-//            // mock objectMapper.convertValue behaviour in getLatLonFromLocation()
-//            when(objectMapperMock.convertValue(any(Map.class), eq(Location.class))).thenReturn(generatedLocation);
+            Mockito.when(objectMapperMock.convertValue(any(Map.class), eq(CurrentWeatherResponse.class)))
+                    .thenReturn(currentWeatherResponse);
 
         } catch (Exception e) {
             logger.error("Error occurred while generating URI in test or deserializing the location data: {}", e.getMessage());
         }
 
-        CurrentWeather generatedCurrentWeather = new CurrentWeather(location, 801, 20, 75, 5.2, "Cloudy");
-
-
-        //when(weatherService.getLatLonFromLocation(location)).thenReturn(Optional.of(generatedLocation));
-
-        when(weatherService.getCurrentWeather(location)).thenReturn(Optional.of(generatedCurrentWeather));
-
-
         // When
-        Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);
+        Optional<CurrentWeather> result = weatherService.getCurrentWeather("london");
 
         // Then
         Assertions.assertTrue(result.isPresent());
         CurrentWeather currentWeather = result.get();
 
         Assertions.assertEquals("London", currentWeather.location());
-        Assertions.assertEquals(20, currentWeather.temperature());
-        Assertions.assertEquals(75, currentWeather.humidity());
-        Assertions.assertEquals(5.2, currentWeather.windSpeed());
-        Assertions.assertEquals("Cloudy", currentWeather.description());
+        Assertions.assertEquals(21, currentWeather.temperature());
+        Assertions.assertEquals(53, currentWeather.humidity());
+        Assertions.assertEquals(7.2, currentWeather.windSpeed());
+        Assertions.assertEquals("Few clouds", currentWeather.description());
         Assertions.assertEquals(801, currentWeather.id());
-        verify(restTemplateMock, times(1)).getForObject("https://dummyurl.com", String.class);
-        verify(weatherService, times(1)).getCurrentWeather("London");
+        verify(restTemplateMock, times(1)).getForObject("https://api.openweathermap.org/data/2.5/weather?lat=51.50853&lon=-0.12574&appid=e30fcfa99c63f0e68d5d5a4e7bdd089a", String.class);
+        verify(weatherRepositoryMock, times(1)).findById("London");
     }
 
-    @Test
-    void getCurrentWeather_InvalidLocation_ReturnsEmptyOptional() {
-        // Given
-//        String location = "InvalidLocation";
-//        when(weatherApiClient.getCurrentWeather(location)).thenReturn(Optional.empty());
-//
-//        // When
-//        Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);
-//
-//        // Then
-//        Assertions.assertTrue(result.isEmpty());
-//        verify(weatherApiClient, times(1)).getCurrentWeather(location);
-//    }
+
+
+
 //
 //    @Test
-//    void getWeatherForecast_ValidLocation_ReturnsWeatherForecastList() {
+//    void getCurrentWeather_InvalidLocation_ReturnsEmptyOptional() {
 //        // Given
-//        String location = "London";
-//        WeatherForecastResponse response = new WeatherForecastResponse();
-//        response.setList(List.of(
-//                createForecastResponse(1622296800, 294.15, 80, 4.8, "Rain", 500),
-//                createForecastResponse(1622383200, 296.15, 70, 3.2, "Cloudy", 802),
-//                createForecastResponse(1622469600, 292.15, 85, 6.5, "Thunderstorm", 200)
-//        ));
-//        when(weatherApiClient.getWeatherForecast(location)).thenReturn(response);
+////        String location = "InvalidLocation";
+////        when(weatherApiClient.getCurrentWeather(location)).thenReturn(Optional.empty());
+////
+////        // When
+////        Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);
+////
+////        // Then
+////        Assertions.assertTrue(result.isEmpty());
+////        verify(weatherApiClient, times(1)).getCurrentWeather(location);
+////    }
+////
+////    @Test
+////    void getWeatherForecast_ValidLocation_ReturnsWeatherForecastList() {
+////        // Given
+////        String location = "London";
+////        WeatherForecastResponse response = new WeatherForecastResponse();
+////        response.setList(List.of(
+////                createForecastResponse(1622296800, 294.15, 80, 4.8, "Rain", 500),
+////                createForecastResponse(1622383200, 296.15, 70, 3.2, "Cloudy", 802),
+////                createForecastResponse(1622469600, 292.15, 85, 6.5, "Thunderstorm", 200)
+////        ));
+////        when(weatherApiClient.getWeatherForecast(location)).thenReturn(response);
+////
+////        // When
+////        List<WeatherForecast> result = weatherService.getWeatherForecast(location);
+////
+////        // Then
+////        Assertions.assertEquals(3, result.size());
+////
+////        WeatherForecast forecast1 = result.get(0);
+////        Assertions.assertEquals("London", forecast1.getLocation());
+////        Assertions.assertEquals("Mon", forecast1.getDayOfWeek());
+////        Assertions.assertEquals(21, forecast1.getTemperature());
+////        Assertions.assertEquals(80, forecast1.getHumidity());
+////        Assertions.assertEquals(4.8, forecast1.getWindSpeed());
+////        Assertions.assertEquals("Rain", forecast1.getDescription());
+////        Assertions.assertEquals(500, forecast1.getId());
 //
-//        // When
-//        List<WeatherForecast> result = weatherService.getWeatherForecast(location);
+//        // ... assertions for the other forecast objects
+//    }
 //
-//        // Then
-//        Assertions.assertEquals(3, result.size());
-//
-//        WeatherForecast forecast1 = result.get(0);
-//        Assertions.assertEquals("London", forecast1.getLocation());
-//        Assertions.assertEquals("Mon", forecast1.getDayOfWeek());
-//        Assertions.assertEquals(21, forecast1.getTemperature());
-//        Assertions.assertEquals(80, forecast1.getHumidity());
-//        Assertions.assertEquals(4.8, forecast1.getWindSpeed());
-//        Assertions.assertEquals("Rain", forecast1.getDescription());
-//        Assertions.assertEquals(500, forecast1.getId());
-
-        // ... assertions for the other forecast objects
-    }
-
-    private Map<String, Object> createForecastResponse(long date, double temp, int humidity, double windSpeed, String description, int id) {
-        Map<String, Object> forecast = Map.of(
-                "dt", date,
-                "main", Map.of("temp", temp, "humidity", humidity),
-                "wind", Map.of("speed", windSpeed),
-                "weather", List.of(Map.of("description", description, "id", id))
-        );
-        return forecast;
-    }
+//    private Map<String, Object> createForecastResponse(long date, double temp, int humidity, double windSpeed, String description, int id) {
+//        Map<String, Object> forecast = Map.of(
+//                "dt", date,
+//                "main", Map.of("temp", temp, "humidity", humidity),
+//                "wind", Map.of("speed", windSpeed),
+//                "weather", List.of(Map.of("description", description, "id", id))
+//        );
+//        return forecast;
+//    }
 }
 
 
