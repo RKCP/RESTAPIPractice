@@ -93,6 +93,7 @@ public class WeatherService {
                 ArrayList<String> daysInForecast = new ArrayList<>();
 
                 for (Object o : weatherResponseList) {
+                    // Create a map of the object, at index(o), inside the list returned from the api. This will include dt, main, weather, wind, clouds , visibility etc
                     Map<String, Object> listObjectMap = objectMapper.convertValue(o, new TypeReference<>() {});
 
                     if (!listObjectMap.isEmpty()) {
