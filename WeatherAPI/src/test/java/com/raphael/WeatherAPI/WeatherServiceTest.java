@@ -3,26 +3,27 @@ package com.raphael.WeatherAPI;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.raphael.WeatherAPI.model.CurrentWeather;
+import com.raphael.WeatherAPI.model.WeatherForecast;
 import com.raphael.WeatherAPI.model.Location;
 import com.raphael.WeatherAPI.model.response.CurrentWeatherResponse;
+import com.raphael.WeatherAPI.model.response.WeatherForecastResponse;
 import com.raphael.WeatherAPI.repository.WeatherRepository;
 import com.raphael.WeatherAPI.service.WeatherService;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.mockito.Mockito.*;
 
@@ -118,7 +119,7 @@ class WeatherServiceTest {
 
         // -- construct the map for our objectMapper.convertValue()
         Map<String, Object> weatherForecastDetailsMap = new HashMap<>();
-        weatherForecastDetailsMap.put("dt", 1687024800L);
+        weatherForecastDetailsMap.put("dt", 1687024800);
         Map<String, Object> mainMap = Map.ofEntries(
                 Map.entry("temp", 297.24),
                 Map.entry("feels_like", 297.11),
@@ -131,6 +132,14 @@ class WeatherServiceTest {
                 Map.entry("temp_kf", 2.66)
         );
         weatherForecastDetailsMap.put("main", mainMap);
+        weatherForecastDetailsMap.put("wind", Map.of("speed", 3.9));
+        weatherForecastDetailsMap.put("weather",  List.of(Map.of("id", 500, "description", "light rain")));
+
+        WeatherForecastResponse weatherForecastResponse = new WeatherForecastResponse(
+                weatherForecastDetailsMap.get("dt"),
+                mainMap,
+                Map.of("speed", 3.9),
+                List.of(Map.of("id", 500, "description", "light rain")));
 
 
         when(weatherRepositoryMock.findById(anyString()))
@@ -142,19 +151,32 @@ class WeatherServiceTest {
         when(objectMapperMock.convertValue(any(Object.class), any(TypeReference.class)))
                 .thenReturn(weatherForecastDetailsMap);
 
-        when(objectMapperMock.convertValue(any(Map.class), any(TypeReference.class)))
+        when(objectMapperMock.convertValue(any(Map.class), eq(WeatherForecastResponse.class)))
                 .thenReturn(weatherForecastResponse);
 
         try {
             // Parse the JSON string
             JSONObject json = new JSONObject(dummyGetWeatherJson);
+            List<JSONObject> convertedList = List.of();
+
+            try {
+                JSONArray jsonArray = json.getJSONArray("list");
+                List<JSONObject> jsonObjectList = new ArrayList<>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    jsonObjectList.add(jsonObject);
+                }
+                convertedList = jsonObjectList;
+            } catch (JSONException e) {
+                logger.error("Error converting jsonArray to normal List in WeatherServiceTest");
+            }
 
             // Extract the desired data from the JSON and convert it to a Map
             Map<String, Object> responseMap = Map.of(
                     "cod", json.getString("cod"),
                     "message", json.getInt("message"),
                     "cnt", json.getInt("cnt"),
-                    "list", json.getJSONArray("list")
+                    "list", convertedList
             );
 
             when(objectMapperMock.readValue(anyString(), any(TypeReference.class)))
@@ -163,53 +185,20 @@ class WeatherServiceTest {
             logger.error("Error occurred while generating URI in test or deserializing the location data: {}", e.getMessage());
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        WeatherForecastResponse response = new WeatherForecastResponse();
-        response.setList(List.of(
-                createForecastResponse(1622296800, 294.15, 80, 4.8, "Rain", 500),
-                createForecastResponse(1622383200, 296.15, 70, 3.2, "Cloudy", 802),
-                createForecastResponse(1622469600, 292.15, 85, 6.5, "Thunderstorm", 200)
-        ));
-        when(weatherApiClient.getWeatherForecast(location)).thenReturn(response);
-
         // When
-        List<WeatherForecast> result = weatherService.getWeatherForecast(location);
+        List<WeatherForecast> result = weatherService.getWeatherForecast("london");
 
         // Then
-        Assertions.assertEquals(3, result.size());
+        Assertions.assertEquals(1, result.size());
 
-        WeatherForecast forecast1 = result.get(0);
-        Assertions.assertEquals("London", forecast1.getLocation());
-        Assertions.assertEquals("Mon", forecast1.getDayOfWeek());
-        Assertions.assertEquals(21, forecast1.getTemperature());
-        Assertions.assertEquals(80, forecast1.getHumidity());
-        Assertions.assertEquals(4.8, forecast1.getWindSpeed());
-        Assertions.assertEquals("Rain", forecast1.getDescription());
-        Assertions.assertEquals(500, forecast1.getId());
-
-         ... assertions for the other forecast objects
+        WeatherForecast forecast = result.get(0);
+        Assertions.assertEquals("London", forecast.location());
+        Assertions.assertEquals("Sun", forecast.day());
+        Assertions.assertEquals(24, forecast.temperature());
+        Assertions.assertEquals(54, forecast.humidity());
+        Assertions.assertEquals(3.9, forecast.windSpeed());
+        Assertions.assertEquals("light rain", forecast.description());
+        Assertions.assertEquals(500, forecast.id());
     }
 
     private Map<String, Object> createForecastResponse(long date, double temp, int humidity, double windSpeed, String description, int id) {
@@ -220,6 +209,23 @@ class WeatherServiceTest {
                 "weather", List.of(Map.of("description", description, "id", id))
         );
         return forecast;
+    }
+
+
+    @Test
+    void getWeatherForecast_InvalidLocation_ReturnsEmptyArrayList() {
+        // Given
+        String location = "Invalid Location";
+
+        when(weatherRepositoryMock.findById(anyString()))
+                .thenReturn(Optional.empty());
+
+        // When
+        Optional<CurrentWeather> result = weatherService.getCurrentWeather(location);
+
+        // Then
+        Assertions.assertTrue(result.isEmpty());
+        verify(weatherRepositoryMock, times(1)).findById(location);
     }
 }
 
