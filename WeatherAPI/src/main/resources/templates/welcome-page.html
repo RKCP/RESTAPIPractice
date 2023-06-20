@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Main Page</title>
+    <link rel="stylesheet" type="text/css" href="/css/main-styles.css">
+</head>
+<body>
+<h1 class="weather-title">Weather App</h1>
+
+<input type="text" id="locationInput" placeholder="Enter location">
+<button onclick="loadCurrentWeather()">Current Weather</button>
+<button onclick="loadForecastWeather()">Forecasted Weather</button>
+
+<div id="content"></div>
+
+<script>
+        function loadCurrentWeather() {
+            const location = document.getElementById("locationInput").value;
+            if (location.trim() !== "") {
+                fetch("/weather/" + encodeURIComponent(location))
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById("content").innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error("Error loading current weather:", error);
+                    });
+            }
+        }
+
+        function loadForecastWeather() {
+            const location = document.getElementById("locationInput").value;
+            if (location.trim() !== "") {
+                fetch("/forecast/" + encodeURIComponent(location))
+                    .then(response => response.text())
+                    .then(data => {
+                        document.getElementById("content").innerHTML = data;
+                    })
+                    .catch(error => {
+                        console.error("Error loading forecast weather:", error);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -21,6 +21,16 @@ public class WeatherController {
     }
 
     /**
+     * Sets the root URL as our defined homepage
+     *
+     * @return the view name for thymeleaf to display the weather api home page
+     */
+    @GetMapping("/")
+    public String weatherHomepage() {
+        return "welcome-page";
+    }
+
+    /**
      * Retrieves the current weather for the specified location and adds it to the model.
      *
      * @param location the location for which to retrieve the current weather
