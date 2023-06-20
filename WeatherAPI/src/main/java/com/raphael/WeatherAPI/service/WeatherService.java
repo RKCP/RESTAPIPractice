@@ -198,8 +198,4 @@ public class WeatherService {
     }
 }
 
-
-
-// TODO: Add another HTML page in front of weather/forecast pages that takes in the location name from user input in a search box, and then redirects to forecast or current weather based on a button click like google search. instead of feeling lucky and search, it will say Current Weather and Forecasted, with the big search bar above it, and above the search bar, Weather Checker
-
 // TODO: Add docker for mongodb
