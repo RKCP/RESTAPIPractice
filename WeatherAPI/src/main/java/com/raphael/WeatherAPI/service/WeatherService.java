@@ -199,3 +199,7 @@ public class WeatherService {
 }
 
 // TODO: Add docker for mongodb
+
+// TODO: Update readme to have 'start docker desktop etc'
+
+// TODO: remove errors that occur when you do mvn clean install
