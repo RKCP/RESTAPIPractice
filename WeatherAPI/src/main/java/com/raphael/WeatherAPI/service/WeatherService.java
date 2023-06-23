@@ -22,7 +22,7 @@ import java.util.Optional;
 @Service
 public class WeatherService {
 
-    private final String API_KEY = "e30fcfa99c63f0e68d5d5a4e7bdd089a";
+    private final String API_KEY = "INSERT_KEY_FROM_EMAIL_HERE";
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -197,5 +197,3 @@ public class WeatherService {
         };
     }
 }
-
-// TODO: remove errors that occur when you do mvn clean install

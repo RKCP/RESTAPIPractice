@@ -15,6 +15,8 @@ Before running the application, make sure you have the following dependencies in
 - Java Development Kit (JDK)
 - Docker and Docker Compose
 
+Additionally, please update the API_KEY variable in the WeatherService class with the given API, found in your email.
+
 ## Running the Application
 
 Follow these steps to run the Weather API application:
@@ -22,12 +24,12 @@ Follow these steps to run the Weather API application:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/weather-api.git
+   git clone https://github.com/RKCP/RESTAPIPractice.git
    ```
 2. Change into the project directory:
 
    ```bash
-   cd WeatherApi
+   cd WeatherAPI
    ```
 3. Open Docker Desktop and then start the MongoDB container using Docker Compose (This will spin up a MongoDB container running on your local machine and will be visibile in Docker Desktop):
 
