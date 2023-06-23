@@ -29,7 +29,7 @@ Follow these steps to run the Weather API application:
    ```bash
    cd WeatherApi
    ```
-3. Start the MongoDB container using Docker Compose (This will spin up a MongoDB container running on your local machine):
+3. Open Docker Desktop and then start the MongoDB container using Docker Compose (This will spin up a MongoDB container running on your local machine and will be visibile in Docker Desktop):
 
    ```bash
    docker-compose up -d
