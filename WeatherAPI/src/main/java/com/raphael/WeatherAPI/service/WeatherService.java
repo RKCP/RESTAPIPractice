@@ -64,7 +64,7 @@ public class WeatherService {
                 logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
             }
         } else {
-            logger.error("Location data is not available for the given city: {}", cityNameFormatted);
+            logger.error("Location data is not available for the given city: {} (Current Weather)", cityNameFormatted);
         }
         return Optional.empty();
     }
@@ -115,7 +115,7 @@ public class WeatherService {
                 logger.error("Error occurred while retrieving or deserializing the location data: {}", e.getMessage());
             }
         } else {
-            logger.error("Location data is not available for the given city: {}", cityNameFormatted);
+            logger.error("Location data is not available for the given city: {} (Forecast Weather)", cityNameFormatted);
         }
         return new ArrayList<>();
     }

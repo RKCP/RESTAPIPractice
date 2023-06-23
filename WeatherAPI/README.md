@@ -49,6 +49,6 @@ Follow these steps to run the Weather API application:
 This will start the application, load the JSON weather data into MongoDB, and make the API available at http://localhost:8080.
 
 
-6. Open your web browser and visit http://localhost:8080 to access the Weather API.
+6. Open your web browser and visit http://localhost:8080 to access the Weather API. You can type in a city name and decide weather you want the current weather or a five day forecast, based on the buttons below the search bar.
 
 Please note that you need to have Docker and Maven installed on your system for the above steps to work correctly.  
